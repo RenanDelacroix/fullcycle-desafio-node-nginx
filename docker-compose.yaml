@@ -1,0 +1,44 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "8080:80"
+    networks:
+      - nodenet
+    depends_on: 
+      - node
+
+  node:
+    build:
+      context: ./node
+      dockerfile: Dockerfile
+    container_name: node
+    command: sh -c "dockerize -wait tcp://db:3306 -timeout 60s && node index.js"
+    networks:
+      - nodenet
+    depends_on: 
+      - db
+
+  db:
+    build: 
+      context: ./mysql  
+      dockerfile: Dockerfile  
+    container_name: db
+    restart: always
+    tty: true
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - nodenet
+
+networks:
+  nodenet:
+    driver: bridge
