@@ -22,6 +22,9 @@ services:
       - nodenet
     depends_on: 
       - db
+    volumes:
+      - ./node/index.js:/app/index.js 
+      - /app/node_modules
 
   db:
     image: mysql:5.7   
